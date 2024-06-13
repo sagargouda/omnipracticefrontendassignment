@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { collection, onSnapshot, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../utils/firebase";
 import Post from "../components/Post";
+import {addFollowing} from "../redux/followSlice";
 
 
 function Feed(props) {
@@ -30,7 +31,7 @@ function Feed(props) {
             });
             return () => unsubscribe();
         }
-    }, [selector.uid]);
+    }, [selector?.uid]);
 
 
 
@@ -53,6 +54,41 @@ function Feed(props) {
         }
     }
 
+
+    // fetching people i am following and my followers and dispatching them in redux
+
+async function fetchFollowing(){
+        if(selector?.uid){
+            const unsubscribe = onSnapshot(collection(db , `users/${selector.uid}/following `) , (query)=>{
+                const followingList = [];
+                query.forEach((doc)=>{
+                    if(doc ){
+                        const data = doc.data()
+                        const following = {followingId : data.followingId , username: data.username}
+                   followingList.push(following)
+                    }else{
+                        console.log('Document does not exist')
+                    }
+                })
+                dispatch(addFollowing([...followingList]))
+            })
+        }
+}
+
+
+    useEffect(() => {
+        fetchFollowing();
+    }, []);
+
+
+
+
+
+
+
+
+
+
     return (
         <div className="w-[90%] md:w-[70%] lg:w-[50%] my-10 py-10 px-10 mx-auto h-auto border-4 border-black">
             <button onClick={openModal}
@@ -74,7 +110,7 @@ function Feed(props) {
             <div className="container mx-auto mt-8">
                 <ul>
                     {posts && posts.length > 0 && posts.map((post) => (
-                        <li key={post.id}>
+                        <li key={post?.id}>
                             <Post
                                 id={post?.id}
                                 post={post?.post}
