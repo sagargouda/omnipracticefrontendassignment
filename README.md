@@ -53,3 +53,21 @@ This project is a simple social media application built with React and Redux, in
 ## File Structure
 
 
+src/
+|-- components/
+| |-- Post.js
+|
+|-- redux/
+| |-- appStore.js
+| |-- followSlice.js
+| |-- userSlice.js
+|
+|-- utils/
+| |-- firebase.js
+|
+|-- views/
+| |-- Profile.js
+| |-- Feed.js
+|
+|-- App.js
+|-- index.js
