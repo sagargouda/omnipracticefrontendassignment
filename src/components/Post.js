@@ -1,17 +1,12 @@
 import React from 'react';
 import Timestamp from "react-timestamp";
-import { doc, deleteDoc } from "firebase/firestore";
-import {db} from "../utils/firebase";
-import {useSelector} from "react-redux";
+
 
 function Post({post , currentUser , time , id }) {
-    // console.log(post , currentUser , time)
-    const selector = useSelector(store => store.user)
-    async function deletePost(id){
-        await deleteDoc(doc(db, `users/${selector?.uid}/posts`, id));
-    }
+
+
     return (
-        <div className="bg-white shadow-md rounded-lg p-4 mb-4 max-w-xl mx-auto">
+        <div key={id} className="bg-white shadow-md rounded-lg p-4 mb-4 max-w-xl mx-auto">
             <div className="flex items-start space-x-4">
                 {/* User Profile Picture Placeholder */}
                 <div className="flex-shrink-0">
@@ -35,14 +30,6 @@ function Post({post , currentUser , time , id }) {
                     </div>
                     <p className="text-gray-700 mt-2">{post}</p>
                     <div className="mt-2 flex space-x-4">
-
-
-                            <button
-                                onClick={() => deletePost(id)}
-                                className="text-red-500 hover:text-red-700 focus:outline-none"
-                            >
-                                Delete
-                            </button>
 
 
                     </div>

@@ -10,28 +10,38 @@ function Feed(props) {
     const [postText, setPostText] = useState('');
     const [posts, setPosts] = useState([]);
     const [isOpen, setIsOpen] = useState(false);
+const [followingPosts , setFollowingPosts] = useState([])
+    const [allPosts , setAllPosts] = useState([])
+
+
 
     const dispatch = useDispatch();
     const selector = useSelector(store => store.user);
-
+    const followingSelector = useSelector(store => store?.follow?.following);
 
     function openModal() {
         setIsOpen(true);
     }
 
     // Getting data from Firebase to show on user feed
-    useEffect(() => {
+
+    async function fetchLoggedUserPost(){
         if (selector.uid) {
             const unsubscribe = onSnapshot(collection(db, `users/${selector.uid}/posts`), (querySnapshot) => {
                 const fetchedPosts = [];
                 querySnapshot.forEach((doc) => {
-                    fetchedPosts.push({ id: doc.id, ...doc.data() });
+                    fetchedPosts.push({ id: doc.id, ...doc.data(),username: selector.username });
                 });
                 setPosts(fetchedPosts);
             });
             return () => unsubscribe();
         }
-    }, [selector?.uid]);
+    }
+
+
+    useEffect(() => {
+        fetchLoggedUserPost()
+    }, [postData]);
 
 
 
@@ -57,36 +67,72 @@ function Feed(props) {
 
     // fetching people i am following and my followers and dispatching them in redux
 
-async function fetchFollowing(){
-        if(selector?.uid){
-            const unsubscribe = onSnapshot(collection(db , `users/${selector.uid}/following `) , (query)=>{
+    async function fetchFollowing() {
+        if (selector?.uid) {
+            const unsubscribeList = [];
+            const unsubscribe = onSnapshot(collection(db, `users/${selector.uid}/following`), (query) => {
                 const followingList = [];
-                query.forEach((doc)=>{
-                    if(doc ){
-                        const data = doc.data()
-                        const following = {followingId : data.followingId , username: data.username}
-                   followingList.push(following)
-                    }else{
-                        console.log('Document does not exist')
+                query.forEach((doc) => {
+                    if (doc) {
+                        const data = doc.data();
+                        const following = { id: data.followingId, username: data.username };
+                        followingList.push(following);
+                        dispatch(addFollowing(following));
+                    } else {
+                        console.log('Document does not exist');
                     }
-                })
-                dispatch(addFollowing([...followingList]))
-            })
-        }
-}
+                });
+                console.log('all of my followers are', followingList);
 
+            });
+            unsubscribeList.push(unsubscribe);
+            return () => unsubscribeList.forEach(unsub => unsub());
+        }
+    }
 
     useEffect(() => {
-        fetchFollowing();
-    }, []);
+         fetchFollowing();
+
+    }, [selector?.uid]);
 
 
 
+   // adding posts to feed of my following when hit follow button
+
+    async function fetchMyFollowingPosts() {
+        if (followingSelector && followingSelector.length > 0) {
+            const unsubscribeList = [];
+            for (const following of followingSelector) {
+                // console.log(`Setting up snapshot for user ${following.id}`);
+                const unsubscribe = onSnapshot(collection(db, `users/${following.id}/posts`), (query) => {
+                    const fetchedPosts = [];
+                    query.forEach((doc) => {
+                        const username = following.username;
+                        const {post , time} = doc.data()
+
+                        console.log('following popsst' , {id: doc.id , post:post , time: time , username})
+                        fetchedPosts.push({ id: doc.id, post, time, username });
 
 
+                    });
+                   setFollowingPosts(prevPosts => [...prevPosts , ...fetchedPosts])
+                });
+unsubscribeList.push(unsubscribe)
+            }
+return () => unsubscribeList.forEach(unsub  => unsub())
+        }
+    }
 
+    useEffect(() => {
+       fetchMyFollowingPosts();
 
+    }, [followingSelector]);
 
+    // console.log('my posts' , ...posts)
+
+    useEffect(()=>{
+        setAllPosts([...posts , ...followingPosts])
+    } , [posts , followingPosts])
 
 
     return (
@@ -109,12 +155,12 @@ async function fetchFollowing(){
 
             <div className="container mx-auto mt-8">
                 <ul>
-                    {posts && posts.length > 0 && posts.map((post) => (
+                    {allPosts && allPosts.length > 0 && allPosts.map((post) => (
                         <li key={post?.id}>
                             <Post
                                 id={post?.id}
                                 post={post?.post}
-                                currentUser={selector?.username}
+                                currentUser={post?.username}
                                 time={post?.time}
                             />
                         </li>

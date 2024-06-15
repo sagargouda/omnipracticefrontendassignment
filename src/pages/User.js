@@ -47,7 +47,7 @@ function User(props) {
 
     useEffect(() => {
         fetchFollowingStatus()
-    }, [whoFollows.following]);
+    }, [whoFollows?.following]);
 
 
     async function handleFollow(user){
@@ -60,7 +60,7 @@ function User(props) {
             // setting followers in db
             const followerRef = await doc(db , `users/${user.id}/followers` , loggedUser.uid)
             await setDoc(followerRef , {followerId: loggedUser.uid , username: loggedUser.username})
-            dispatch(addFollowing({ id: user.id, username: user.username }));
+            // dispatch(addFollowing({ id: user.id, username: user.username }));
         }
         catch(e){
             alert('might be some error following ' + e )

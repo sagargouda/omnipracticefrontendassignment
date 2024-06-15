@@ -6,7 +6,7 @@ import {auth} from "../utils/firebase";
 import {useDispatch, useSelector} from "react-redux";
 import {Link, useNavigate} from "react-router-dom";
 import { removeUser} from "../redux/userSlice";
-import {logOut} from "../redux/followSlice";
+import {logout} from "../redux/followSlice";
 
 
 
@@ -31,7 +31,7 @@ function Header() {
             // if sign out is successful navigate to "/"
             navigate('/')
             dispatch(removeUser())
-
+          dispatch(logout())
         }).catch((error) => {
             // if error happens pass it to navigate('*') which is an error page
             navigate('*')
