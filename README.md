@@ -71,3 +71,9 @@ src/
 |
 |-- App.js
 |-- index.js
+
+## Improvements 
+
+- **Custom hooks**
+- **using storage**
+   
